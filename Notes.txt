@@ -1,0 +1,9 @@
+to run this prototype you must:
+1. intall the required modules (there is no requirements.txt file identify the requirements yourself)
+2. run 'cd route_to_the_project_folder_on_you_disk'
+3. run 'python server/update_data.py' (note that this may take about 15 Minutes)
+4. run 'python server/regenerate_stocks_json.py'
+5. run 'node server/run_up_down.js'
+6. fainally run 'npm start'
+
+# note that this isn't the fainal product and there are tuns of edits and upgrades.
