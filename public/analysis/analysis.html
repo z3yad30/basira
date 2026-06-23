@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="تحليل السهم وتوقعات GBM — بصيرة Basira" />
+  <title>تحليل السهم — بصيرة Basira</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+</head>
+<body class="analysis-page">
+
+  <!-- ══════════════ SKELETON OVERLAY ══════════════ -->
+  <div id="loading-overlay" class="loading-overlay" hidden>
+    <div class="skeleton-shell">
+      <div class="skeleton-header">
+        <div class="skel skel-pill"></div>
+        <div class="skel skel-title"></div>
+        <div class="skel skel-sub"></div>
+      </div>
+      <div class="skeleton-grid">
+        <div class="skel skel-chart"></div>
+        <div class="skel skel-sidebar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ INFO SIDE PANEL ══════════════ -->
+  <div id="info-panel" class="info-panel" hidden>
+    <div class="info-card-panel">
+      <div class="info-panel-header">
+        <h3 id="info-title">معلومة سريعة</h3>
+        <button type="button" class="icon-btn" id="info-close" aria-label="إغلاق">✕</button>
+      </div>
+      <p id="info-description">اضغط على أي رقم أو بيان لقراءة شرح بسيط عنه.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════ TOAST ══════════════ -->
+  <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+  <!-- ══════════════ PAGE SHELL ══════════════ -->
+  <div class="page-shell">
+      <!-- MARKET STATUS BANNER -->
+      <div id="marketStatusBanner" class="market-status-banner" aria-live="polite"></div>
+    <!-- STICKY TOP BAR -->
+    <header class="top-bar" id="top-bar">
+      <a class="back-link" href="../main_dashboard/index.html" aria-label="العودة">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        لوحة التحكم
+      </a>
+      <div class="top-bar-center">
+        <span id="tb-symbol" class="tb-symbol">—</span>
+        <span id="tb-name" class="tb-name">جاري التحميل...</span>
+      </div>
+      <div class="top-bar-right">
+        <span id="tb-price" class="tb-price mono">—</span>
+        <span id="tb-change" class="tb-change">—</span>
+      </div>
+    </header>
+
+    <!-- ══════ HERO ══════ -->
+    <section class="analysis-hero card">
+      <div class="hero-top">
+        <div class="hero-identity">
+          <div class="symbol-badge" id="hero-symbol-badge">—</div>
+          <div>
+            <h1 id="analysis-symbol" class="hero-symbol">—</h1>
+            <p id="analysis-name" class="hero-name">جاري التحميل...</p>
+          </div>
+          <div class="last-date-badge" id="last-date-badge" hidden>
+            <span class="badge-dot"></span>
+            <span id="last-date-text">—</span>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button type="button" class="button button-ghost" id="btn-watch">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            مراقبة
+          </button>
+          <button type="button" class="button button-ghost" id="btn-alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            تنبيه
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-main">
+        <div class="hero-price-block">
+          <div class="price-row">
+            <strong id="analysis-price" class="price-value mono">—</strong>
+            <span class="price-unit">EGP</span>
+            <span id="analysis-change" class="price-change">—</span>
+          </div>
+          <div class="hero-tags">
+            <span class="forecast-tag" id="forecast-scenario">متوسط</span>
+            <span id="ma-tag" class="ma-tag">—</span>
+          </div>
+          <p class="hero-copy">تحليل شامل: مؤشرات فنية، بيانات أساسية مقدَّرة، نموذج GBM مع اختبار خلفي على البيانات التاريخية، وتوقعات لأفق 15 يوماً.</p>
+        </div>
+
+        <!-- SPARKLINE MINI CHART -->
+        <div class="sparkline-wrap">
+          <div id="sparkline-chart" class="sparkline-chart" aria-label="مسار السعر الأخير"></div>
+          <span class="sparkline-label">آخر 60 يوم</span>
+        </div>
+
+        <!-- SCENARIO BUTTONS -->
+        <div class="forecast-buttons" id="forecast-btn-group" role="group" aria-label="سيناريو التوقع">
+          <button class="scenario-btn" type="button" data-scenario="conservative">
+            <span class="scenario-icon">↓</span>
+            متشائم
+          </button>
+          <button class="scenario-btn active" type="button" data-scenario="mean">
+            <span class="scenario-icon">→</span>
+            متوسط
+          </button>
+          <button class="scenario-btn" type="button" data-scenario="aggressive">
+            <span class="scenario-icon">↑</span>
+            متفائل
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ MAIN GRID ══════ -->
+    <div class="analysis-grid">
+
+      <!-- ── LEFT COLUMN ── -->
+      <div class="col-left">
+
+        <!-- GBM CHART CARD -->
+        <section class="card chart-card" id="main-chart-card">
+          <div class="card-header-row chart-header-row">
+            <div>
+              <h2>التوقعات الرسومية</h2>
+              <p class="card-sub">الاختبار الخلفي بنوافذ 15 يوماً + نطاق الثقة 95% للأفق المستقبلي</p>
+            </div>
+            <div class="chart-header-actions">
+              <div class="chart-tabs" role="tablist">
+                <button class="chart-tab active" role="tab" aria-selected="true" data-chart-tab="gbm">توقعات GBM</button>
+                <button class="chart-tab" role="tab" aria-selected="false" data-chart-tab="volume">الحجم</button>
+                <button class="chart-tab" role="tab" aria-selected="false" data-chart-tab="candlestick">الشموع اليابانية</button>
+              </div>
+              <button type="button" class="fullscreen-btn" id="btn-fullscreen" aria-label="تكبير الشاشة" title="تكبير الشاشة">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div id="analysis-chart" class="chart-box" aria-label="رسم بياني لتوقعات السهم"></div>
+          <div id="volume-chart" class="chart-box" hidden aria-label="رسم بياني لحجم التداول"></div>
+          <div id="candlestick-chart" class="chart-box" hidden aria-label="رسم بياني شموع يابانية"></div>
+
+          <!-- MODEL STATS STRIP -->
+          <div class="model-stats-strip" id="model-stats-strip">
+            <div class="model-stat">
+              <span>RMSE</span>
+              <strong id="stat-rmse" class="mono">—</strong>
+            </div>
+            <div class="model-stat">
+              <span>MAPE</span>
+              <strong id="stat-mape" class="mono">—</strong>
+            </div>
+            <div class="model-stat">
+              <span>دقة النموذج</span>
+              <strong id="stat-accuracy" class="mono">—</strong>
+            </div>
+            <div class="model-stat">
+              <span>أفق التوقع</span>
+              <strong id="stat-horizon" class="mono">—</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- TECHNICAL BULLETS -->
+        <section class="card bullets-card">
+          <div class="card-header-row">
+            <h2>ملخص التحليل الفني</h2>
+          </div>
+          <ul id="tech-bullets" class="tech-bullets">
+            <li class="bullet-skeleton">جاري التحميل...</li>
+          </ul>
+        </section>
+
+        <!-- SUPPORT / RESISTANCE VISUAL -->
+        <section class="card sr-card">
+          <div class="card-header-row">
+            <div>
+              <h2>الدعم والمقاومة</h2>
+              <p class="card-sub">النطاق السعري خلال آخر 60 يوم</p>
+            </div>
+          </div>
+          <div class="sr-track-wrapper">
+            <div class="sr-label sr-label-support">
+              <span class="sr-level-tag support-tag">دعم</span>
+              <strong id="sr-support" class="mono">—</strong>
+            </div>
+            <div class="sr-track">
+              <div class="sr-fill" id="sr-fill"></div>
+              <div class="sr-price-marker" id="sr-price-marker">
+                <span class="sr-price-tip" id="sr-price-tip">—</span>
+              </div>
+            </div>
+            <div class="sr-label sr-label-resistance">
+              <strong id="sr-resistance" class="mono">—</strong>
+              <span class="sr-level-tag resistance-tag">مقاومة</span>
+            </div>
+          </div>
+          <div class="sr-distances">
+            <div class="sr-dist-item">
+              <span>المسافة من الدعم</span>
+              <strong id="sr-dist-support" class="mono positive">—</strong>
+            </div>
+            <div class="sr-dist-item">
+              <span>المسافة من المقاومة</span>
+              <strong id="sr-dist-resistance" class="mono negative">—</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- TRADE SCENARIOS -->
+        <section class="card metals-card" id="metals-card">
+          <div class="card-header-row">
+            <h2>الذهب والفضة والنفط والدولار — علاقة بالسعر</h2>
+            <p class="card-sub">مقارنة تاريخية وتقدير الارتباط (Pearson)</p>
+          </div>
+          <div id="metals-compare-chart" class="chart-box" style="height:340px;"></div>
+          <div class="metals-stats-row" style="display:flex;flex-wrap:wrap;gap:12px;padding:12px 16px;align-items:center;">
+            <div><span>ارتباط السهم مع الذهب:</span> <strong id="corr-gold" class="mono">—</strong></div>
+            <div><span>ارتباط السهم مع الفضة:</span> <strong id="corr-silver" class="mono">—</strong></div>
+            <div><span>ارتباط السهم مع الدولار:</span> <strong id="corr-usd" class="mono">—</strong></div>
+            <div><span>ارتباط السهم مع Brent:</span> <strong id="corr-brent" class="mono">—</strong></div>
+            <div><span>ارتباط السهم مع WTI:</span> <strong id="corr-wti" class="mono">—</strong></div>
+          </div>
+        </section>
+
+        <section class="card trade-card">
+          <div class="card-header-row">
+            <h2>سيناريوهات التداول</h2>
+          </div>
+          <div id="trade-scenarios" class="trade-list">
+            <p class="muted">سيتم عرض اقتراحات الدخول والخروج بناءً على الدعم والمقاومة.</p>
+          </div>
+        </section>
+
+      </div><!-- /col-left -->
+
+      <!-- ── RIGHT COLUMN ── -->
+      <aside class="col-right">
+
+        <!-- AI FORECAST SUMMARY -->
+        <section class="card summary-card">
+          <div class="card-header-row">
+            <div>
+              <h2>توقعات الذكاء الاصطناعي</h2>
+              <p class="card-sub">نموذج GBM — 5,000 مسار محاكاة</p>
+            </div>
+          </div>
+
+          <!-- DIRECTION + CONFIDENCE PIE CHART -->
+          <div class="forecast-arc-row">
+            <div class="forecast-arc-block">
+              <svg class="confidence-pie" viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="pie-bg" cx="60" cy="60" r="48" fill="none" stroke-width="14" />
+                <circle class="pie-fill" id="pie-fill" cx="60" cy="60" r="48" fill="none" stroke-width="14" stroke-dasharray="302" stroke-dashoffset="302" />
+                <text class="pie-text" id="pie-text" x="60" y="58" text-anchor="middle">—</text>
+                <text class="pie-subtext" x="60" y="78" text-anchor="middle">up</text>
+              </svg>
+              <p class="arc-sublabel">احتمالية الصعود</p>
+            </div>
+            <div class="direction-summary">
+              <div class="direction-badge-wrap">
+                <span class="direction-badge" id="pred-direction">—</span>
+              </div>
+              <div class="conf-badge-wrap">
+                <span class="conf-label">الثقة:</span>
+                <span class="conf-value" id="pred-confidence">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRICE RANGE BAR -->
+          <div class="price-range-block">
+            <div class="price-range-header">
+              <span>النطاق المتوقع — 15 يوماُ</span>
+              <span class="mono" id="pred-expected">—</span>
+            </div>
+            <div class="price-range-bar">
+              <div class="price-range-fill" id="price-range-fill"></div>
+              <div class="price-range-current" id="price-range-current"></div>
+            </div>
+            <div class="price-range-labels">
+              <span class="mono negative" id="pred-min">—</span>
+              <span class="range-center-label">متوسط</span>
+              <span class="mono positive" id="pred-max">—</span>
+            </div>
+          </div>
+
+          <div class="summary-stats-row">
+            <div class="summary-stat-block">
+              <span>دقة النموذج</span>
+              <strong id="pred-accuracy" class="mono">—</strong>
+            </div>
+            <div class="summary-stat-block">
+              <span>سيناريو التوقع</span>
+              <strong id="pred-scenario-label">—</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- TECHNICAL INDICATORS -->
+        <section class="card info-card">
+          <div class="card-header-row"><h2>المؤشرات الفنية</h2></div>
+          <div class="stats-grid">
+            <button class="stat-block" data-info-key="rsi">
+              <span class="stat-label">RSI (14)</span>
+              <strong id="ind-rsi" class="mono">—</strong>
+              <span class="stat-sub" id="ind-rsi-zone">—</span>
+            </button>
+            <button class="stat-block" data-info-key="macd">
+              <span class="stat-label">MACD</span>
+              <strong id="ind-macd">—</strong>
+              <span class="stat-sub">زخم</span>
+            </button>
+            <button class="stat-block" data-info-key="ma">
+              <span class="stat-label">SMA 20</span>
+              <strong id="ind-sma20" class="mono">—</strong>
+              <span class="stat-sub" id="ind-sma20-rel">—</span>
+            </button>
+            <button class="stat-block" data-info-key="ma">
+              <span class="stat-label">SMA 50</span>
+              <strong id="ind-sma50" class="mono">—</strong>
+              <span class="stat-sub" id="ind-sma50-rel">—</span>
+            </button>
+            <button class="stat-block" data-info-key="volumeRatio">
+              <span class="stat-label">الحجم</span>
+              <strong id="ind-volume">—</strong>
+              <span class="stat-sub" id="ind-vol-ratio" class="mono">—</span>
+            </button>
+            <button class="stat-block" data-info-key="liquidity">
+              <span class="stat-label">السيولة</span>
+              <strong id="ind-liquidity">—</strong>
+              <span class="stat-sub mono" id="ind-liq-score">—</span>
+            </button>
+          </div>
+          <!-- Volume Profile -->
+          <div class="volume-profile-row" id="volume-profile-row" hidden>
+            <span class="vp-label">ملف الحجم:</span>
+            <span id="volume-profile-text" class="vp-text">—</span>
+          </div>
+        </section>
+
+        <!-- RISK METRICS -->
+        <section class="card risk-card">
+          <div class="card-header-row">
+            <div>
+              <h2>مقاييس المخاطر</h2>
+              <p class="card-sub">محسوبة على البيانات التاريخية الكاملة</p>
+            </div>
+          </div>
+          <div class="risk-grid">
+            <button class="stat-block risk-block" data-info-key="sharpe">
+              <span class="stat-label">Sharpe Ratio</span>
+              <strong id="risk-sharpe" class="mono">—</strong>
+              <span class="stat-sub">سنوي</span>
+            </button>
+            <button class="stat-block risk-block" data-info-key="sortino">
+              <span class="stat-label">Sortino Ratio</span>
+              <strong id="risk-sortino" class="mono">—</strong>
+              <span class="stat-sub">سنوي</span>
+            </button>
+            <button class="stat-block risk-block" data-info-key="var95">
+              <span class="stat-label">VaR 95%</span>
+              <strong id="risk-var95" class="mono negative">—</strong>
+              <span class="stat-sub">يومي</span>
+            </button>
+            <button class="stat-block risk-block" data-info-key="var99">
+              <span class="stat-label">VaR 99%</span>
+              <strong id="risk-var99" class="mono negative">—</strong>
+              <span class="stat-sub">يومي</span>
+            </button>
+          </div>
+          <div class="var15d-block" id="var15d-block">
+            <span class="var15d-label">أقصى خسارة متوقعة (15 يوم — ثقة 95%)</span>
+            <div class="var15d-bar-wrap">
+              <div class="var15d-bar" id="var15d-bar"></div>
+              <strong id="risk-var15d" class="mono negative var15d-val">—</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- FUNDAMENTAL DATA -->
+        <section class="card info-card fundamentals-card">
+          <div class="card-header-row">
+            <div>
+              <h2>البيانات الأساسية</h2>
+              <p class="card-sub">مُقدَّرة من التحليل الإحصائي للبيانات التاريخية</p>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <button class="stat-block" data-info-key="peTrailing">
+              <span class="stat-label">P/E خلفي</span>
+              <strong id="fund-pe" class="mono">—</strong>
+            </button>
+            <button class="stat-block" data-info-key="peForward">
+              <span class="stat-label">P/E مستقبلي</span>
+              <strong id="fund-pe-forward" class="mono">—</strong>
+            </button>
+            <button class="stat-block" data-info-key="pb">
+              <span class="stat-label">P/B</span>
+              <strong id="fund-pb" class="mono">—</strong>
+            </button>
+            <button class="stat-block" data-info-key="evEbitda">
+              <span class="stat-label">EV/EBITDA</span>
+              <strong id="fund-ev" class="mono">—</strong>
+            </button>
+            <button class="stat-block" data-info-key="dividendYield">
+              <span class="stat-label">عائد الأرباح</span>
+              <strong id="fund-div" class="mono">—</strong>
+            </button>
+            <button class="stat-block" data-info-key="revenueGrowth">
+              <span class="stat-label">نمو الإيرادات</span>
+              <strong id="fund-growth" class="mono">—</strong>
+            </button>
+          </div>
+          <div class="fundamental-note-row">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p class="note-text" id="fundamental-note">القيم مقدرة — اربط مصدر بيانات EGX للأرقام الفعلية.</p>
+          </div>
+        </section>
+
+      </aside><!-- /col-right -->
+    </div><!-- /analysis-grid -->
+  </div><!-- /page-shell -->
+
+  <script src="../market-status.js"></script>
+  <script src="analysis.js"></script>
+</body>
+</html>

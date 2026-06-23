@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>بصيرة | لوحة التحكم</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">تخطي إلى المحتوى</a>
+    <div class="page-shell">
+      <header class="site-header" role="banner">
+        <div class="brand">
+          <a class="brand-logo-link" href="../index.html" aria-label="العودة إلى الصفحة الرئيسية">
+            <img src="../images/logo/base_logo.png" alt="شعار بصيرة" class="brand-logo" />
+            <div class="brand-text">
+              <span class="brand-title">بصيرة</span>
+              <span class="brand-tag">منصة التحليل الأولى للبورصة المصرية</span>
+            </div>
+          </a>
+        </div>
+        <nav class="header-nav" aria-label="التنقل الرئيسي">
+          <a class="nav-tab active" href="index.html" aria-current="page">لوحة التحكم</a>
+          <a class="nav-tab" href="#" data-tab="التنبيهات">التنبيهات</a>
+          <a class="nav-tab" href="#" data-tab="التعليم">التعليم</a>
+          <a class="nav-tab" href="#" data-tab="الاشتراك">الاشتراك</a>
+          <a class="nav-tab" href="#" data-tab="قائمة المراقبة">قائمة المراقبة</a>
+          <a class="nav-tab" href="#" data-tab="اسأل بصيره AI">اسأل بصيره AI</a>
+          <a class="nav-tab" href="#" data-tab="الملف الشخصي">الملف الشخصي</a>
+        </nav>
+      </header>
+
+      <div id="marketStatusBanner" class="market-status-banner" aria-live="polite"></div>
+
+      <main id="main-content">
+        <section class="search-section">
+          <div class="search-container">
+            <h2 class="search-heading">ابحث عن سهمك</h2>
+            <div class="search-bar-wrapper">
+              <div class="search-bar">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input
+                  type="text"
+                  class="search-input"
+                  placeholder="ابحث برمز السهم أو الاسم..."
+                  aria-label="حقل البحث عن الأسهم"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="search-results" id="searchResults" aria-live="polite"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="market-overview-section">
+          <div class="market-overview-container">
+            <h2 class="market-overview-title">نظرة عامة على السوق</h2>
+            <div class="market-overview-content">
+              <div class="market-stats">
+                <div class="stat-card stat-up">
+                  <div class="stat-value" id="stocksUp">-</div>
+                  <div class="stat-label">أسهم صاعدة</div>
+                  <div class="stat-icon">📈</div>
+                </div>
+                <div class="stat-card stat-down">
+                  <div class="stat-value" id="stocksDown">-</div>
+                  <div class="stat-label">أسهم هابطة</div>
+                  <div class="stat-icon">📉</div>
+                </div>
+                <div class="stat-card stat-neutral">
+                  <div class="stat-value" id="stocksNeutral">-</div>
+                  <div class="stat-label">أسهم ثابتة</div>
+                  <div class="stat-icon">➡️</div>
+                </div>
+              </div>
+              <div class="market-chart-wrapper">
+                <canvas id="marketChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="metals-prices-section">
+          <div class="market-overview-container">
+            <h2 class="market-overview-title">سعر الذهب والفضة وخامي النفط</h2>
+            <div class="metals-controls" aria-hidden="false">
+              <label for="metalsTimeRange" class="metals-control-label">النطاق الزمني:</label>
+              <select id="metalsTimeRange" class="metals-select" aria-label="اختر النطاق الزمني">
+                <option value="2m" selected>آخر شهرين</option>
+                <option value="6m">آخر 6 أشهر</option>
+                <option value="1y">آخر سنة</option>
+                <option value="2y">آخر سنتين</option>
+                <option value="all">الكل</option>
+              </select>
+
+              <label for="metalsTimeZone" class="metals-control-label">المنطقة الزمنية:</label>
+              <select id="metalsTimeZone" class="metals-select" aria-label="اختر المنطقة الزمنية">
+                <option value="browser" selected>متصفح (افتراضي)</option>
+                <option value="UTC">UTC</option>
+                <option value="Africa/Cairo">Africa/Cairo</option>
+                <option value="Europe/London">Europe/London</option>
+                <option value="Asia/Riyadh">Asia/Riyadh</option>
+                <option value="Asia/Dubai">Asia/Dubai</option>
+                <option value="America/New_York">America/New_York</option>
+              </select>
+            </div>
+
+            <div class="market-chart-wrapper">
+              <canvas id="metalsChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="top-movers-section">
+          <div class="top-movers-container">
+            <div class="top-movers-header-row">
+              <h2 class="top-movers-title">أكثر الأسهم تحركاً</h2>
+              <div class="top-movers-tabs">
+                <button class="movers-tab active" data-tab="gainers" aria-selected="true">
+                  <span class="tab-indicator up"></span>
+                  الرابحين
+                </button>
+                <button class="movers-tab" data-tab="losers" aria-selected="false">
+                  <span class="tab-indicator down"></span>
+                  الخاسرين
+                </button>
+              </div>
+            </div>
+            <div class="top-movers-table-wrapper">
+              <div class="movers-table-header">
+                <span class="col-rank">#</span>
+                <span class="col-stock">السهم</span>
+                <span class="col-change">التغير</span>
+                <span class="col-percent">النسبة</span>
+                <span class="col-spark">الحركة</span>
+              </div>
+              <div class="top-movers-list" id="topMoversList"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="mini-modal-overlay" id="comingSoonModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="mini-modal">
+        <h3 id="modalTitle">قريباً</h3>
+        <p id="modalText">سيتم إطلاق هذه الصفحة قريباً.</p>
+        <button class="button" id="modalOkBtn">موافق</button>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../market-status.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
