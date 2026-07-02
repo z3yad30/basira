@@ -1,7 +1,0 @@
-# Python dependencies for the Basira stock analysis app
-numpy>=1.26.0
-pandas>=2.2.0
-plotly>=5.18.0
-yfinance>=0.2.50
-python-dateutil>=2.8.0
-lxml>=5.0.0
